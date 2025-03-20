@@ -79,7 +79,7 @@ func main() {
 	A := "A"
 	//拿到所有游戏的价格
 	for j, gameID := range global.GameList {
-		if j == 5 {
+		if j == 1000 {
 			break
 		}
 		gameInfo := make([]any, 0, 84)
@@ -101,7 +101,9 @@ func main() {
 				continue
 			}
 			exchangeRate := global.ExchangeRateMap[_location.CurrencyCode]
-			gameInfo = append(gameInfo, (float64(_price.Initial)/100)*exchangeRate, (float64(_price.Final)/100)*exchangeRate)
+			initP := (float64(_price.Initial) / 100) * exchangeRate
+			finalP := (float64(_price.Final) / 100) * exchangeRate
+			gameInfo = append(gameInfo, fmt.Sprintf("%.2f", initP), fmt.Sprintf("%.2f", finalP))
 		}
 		if err := global.F.SetSheetRow("Sheet1", A+strconv.Itoa(idx), &gameInfo); err != nil {
 			global.Logger.Error("写入Excel失败", code.ERROR, err)
