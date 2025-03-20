@@ -7,7 +7,7 @@ import (
 )
 
 func GetGameName(game *models.SteamGamePrice) string {
-	gameName, ok := global.GameNameMap[strconv.Itoa(int(game.ID))]
+	gameName, ok := global.GameNameMap[strconv.Itoa(int(game.SteamGameID))]
 	if ok {
 		return gameName
 	}
