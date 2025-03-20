@@ -83,7 +83,7 @@ func main() {
 		for i := range 41 {
 			i += 1
 			_price := models.SteamGamePrice{}
-			if err := global.DB.Debug().Where("steam_game_id  = ?", gameID).Where("steam_location_id = ?", i).Find(&_price).Error; err != nil {
+			if err := global.DB.Preload("SteamGame").Where("steam_game_id  = ?", gameID).Where("steam_location_id = ?", i).Find(&_price).Error; err != nil {
 				global.Logger.Error("查询steam游戏价格失败", code.ERROR, err, "游戏ID", gameID, "区ID", i)
 				continue
 			}
