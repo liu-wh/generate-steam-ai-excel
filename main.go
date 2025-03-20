@@ -112,6 +112,7 @@ func main() {
 		if flag {
 			continue
 		}
+		idx += 1
 		if err := global.F.SetSheetRow("Sheet1", A+strconv.Itoa(idx), &gameInfo); err != nil {
 			global.Logger.Error("写入Excel失败", code.ERROR, err)
 		}
