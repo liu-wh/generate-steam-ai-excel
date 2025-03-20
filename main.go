@@ -82,6 +82,7 @@ func main() {
 		if j == 1000 {
 			break
 		}
+		flag := false
 		gameInfo := make([]any, 0, 84)
 		for i := range 41 {
 			i += 1
@@ -90,7 +91,10 @@ func main() {
 				global.Logger.Error("查询steam游戏价格失败", code.ERROR, err, "游戏ID", gameID, "区ID", i)
 				continue
 			}
-
+			if _price.IsFree {
+				flag = true
+				break
+			}
 			if i == 1 {
 				gameInfo = append(gameInfo, util.GetGameName(&_price), _price.DiscountPercent, _price.Initial/100, _price.Final/100)
 				continue
@@ -105,10 +109,12 @@ func main() {
 			finalP := (float64(_price.Final) / 100) * exchangeRate
 			gameInfo = append(gameInfo, fmt.Sprintf("%.2f", initP), fmt.Sprintf("%.2f", finalP))
 		}
+		if flag {
+			continue
+		}
 		if err := global.F.SetSheetRow("Sheet1", A+strconv.Itoa(idx), &gameInfo); err != nil {
 			global.Logger.Error("写入Excel失败", code.ERROR, err)
 		}
-		idx += 1
 
 	}
 
