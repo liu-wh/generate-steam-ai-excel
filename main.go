@@ -91,11 +91,11 @@ func main() {
 				global.Logger.Error("查询steam游戏价格失败", code.ERROR, err, "游戏ID", gameID, "区ID", i)
 				continue
 			}
-			if _price.IsFree {
-				flag = true
-				break
-			}
 			if i == 1 {
+				if _price.Initial == 0 && _price.Final == 0 {
+					flag = true
+					break
+				}
 				gameInfo = append(gameInfo, util.GetGameName(&_price), _price.DiscountPercent, _price.Initial/100, _price.Final/100)
 				continue
 			}
