@@ -79,6 +79,9 @@ func main() {
 	A := "A"
 	//拿到所有游戏的价格
 	for j, gameID := range global.GameList {
+		if j == 5 {
+			break
+		}
 		gameInfo := make([]any, 0, 84)
 		for i := range 41 {
 			i += 1
@@ -97,17 +100,14 @@ func main() {
 				global.Logger.Error("查询steam区", code.ERROR, err, "区ID", i)
 				continue
 			}
-			exchangeRate := global.ExchangeRateMap[_location.Currency]
+			exchangeRate := global.ExchangeRateMap[_location.CurrencyCode]
 			gameInfo = append(gameInfo, (float64(_price.Initial)/100)*exchangeRate, (float64(_price.Final)/100)*exchangeRate)
 		}
-		fmt.Println(gameInfo)
 		if err := global.F.SetSheetRow("Sheet1", A+strconv.Itoa(idx), &gameInfo); err != nil {
 			global.Logger.Error("写入Excel失败", code.ERROR, err)
 		}
 		idx += 1
-		if j == 5 {
-			break
-		}
+
 	}
 
 	//gamePriceList := make([]*models.SteamGamePrice, 0, 335338)
