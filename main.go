@@ -132,7 +132,15 @@ func main() {
 			exchangeRate := global.ExchangeRateMap[_location.CurrencyCode]
 			initP := (float64(_price.Initial) / 100) * exchangeRate
 			finalP := (float64(_price.Final) / 100) * exchangeRate
-			gameInfo = append(gameInfo, fmt.Sprintf("%.2f", initP), fmt.Sprintf("%.2f", finalP))
+			initStr := fmt.Sprintf("%.2f", initP)
+			finalStr := fmt.Sprintf("%.2f", finalP)
+			if initP == 0 {
+				initStr = "无"
+			}
+			if finalP == 0 {
+				finalStr = "无"
+			}
+			gameInfo = append(gameInfo, initStr, finalStr)
 		}
 		if flag {
 			continue
