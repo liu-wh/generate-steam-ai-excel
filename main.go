@@ -88,7 +88,7 @@ func main() {
 	A := "A"
 	//拿到所有游戏的价格
 	for j, gameID := range global.GameList {
-		if j == 100 {
+		if j == 1300 {
 			break
 		}
 		flag := false
