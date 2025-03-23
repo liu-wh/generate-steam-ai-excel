@@ -129,6 +129,7 @@ func main() {
 				} else {
 					_date = time.Unix(int64(_cc.TimeStamp), 0).Format(time.DateOnly)
 				}
+				_p = _cc.Price
 
 				gameInfo = append(gameInfo, _p, _date)
 				continue
