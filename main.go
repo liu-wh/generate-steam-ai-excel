@@ -124,6 +124,9 @@ func main() {
 				if _cc.Price == 0 && _cc.TimeStamp == 0 {
 					gameInfo = append(gameInfo, " ", " ")
 					continue
+				} else if _cc.Price != 0 && _cc.TimeStamp == 0 {
+					gameInfo = append(gameInfo, _cc.Price, ' ')
+					continue
 				}
 				gameInfo = append(gameInfo, _cc.Price, _date.Format(time.DateOnly))
 				continue
