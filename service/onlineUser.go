@@ -29,7 +29,6 @@ func GenerateOnlineUserExcel() {
 	if onlineUserStr, err = global.R.Get(global.CTX, "SteamGameTop").Result(); err != nil {
 		return
 	}
-	fmt.Println(onlineUserStr)
 	gameList := make([]*SteamGame, 0, 3000)
 	if err = json.Unmarshal(util.Str2bytes(onlineUserStr), &gameList); err != nil {
 		global.Logger.Error("解析在线用户数据失败", code.ERROR, err)
@@ -37,7 +36,6 @@ func GenerateOnlineUserExcel() {
 	}
 	i := 2
 	for _, game := range gameList {
-		fmt.Println(game.Name, game.Count)
 		_ = global.OnlineUserFile.SetSheetRow(code.SHEET1, "A"+strconv.Itoa(i), &[]any{
 			game.Name,
 			game.Count,
