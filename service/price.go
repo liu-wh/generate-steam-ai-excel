@@ -37,6 +37,25 @@ func GeneratePriceExcel() {
 				continue
 			}
 			if i == 1 {
+				_storeData := models.SteamGameStoreData{}
+				var (
+					_storeDataStr string
+					err           error
+				)
+				if _storeDataStr, err = global.R.HGet(global.CTX, "SteamGameStoreDetailData", gameID).Result(); err != nil {
+					global.Logger.Error("查询游戏详情失败", code.ERROR, err, "游戏ID", gameID)
+				} else {
+					if err = json.Unmarshal(util.Str2bytes(_storeDataStr), &_storeData); err != nil {
+						global.Logger.Error("解析游戏详情失败", code.ERROR, err, "游戏ID", gameID)
+					} else {
+						if _storeData.Data.IsFree {
+							gameInfo = append(gameInfo, util.GetGameName(&models.SteamGamePrice{SteamGameID: uint(_storeData.Data.SteamAppid)}), " ", " ", "免费")
+							flag = true
+							break
+						}
+					}
+				}
+
 				if _price.Initial == 0 && _price.Final == 0 {
 					flag = true
 					break
