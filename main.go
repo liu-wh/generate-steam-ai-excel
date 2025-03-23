@@ -121,10 +121,10 @@ func main() {
 					continue
 				}
 				_date := time.Unix(int64(_cc.TimeStamp), 0)
-				if _cc.Price == 0 && _cc.TimeStamp == 0 {
+				if _cc.Price == 0 && _cc.TimeStamp == 88 {
 					gameInfo = append(gameInfo, " ", " ")
 					continue
-				} else if _cc.Price != 0 && _cc.TimeStamp == 0 {
+				} else if _cc.Price != 0 && _cc.TimeStamp == 88 {
 					gameInfo = append(gameInfo, _cc.Price, ' ')
 					continue
 				}
