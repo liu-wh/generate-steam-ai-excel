@@ -1,5 +1,6 @@
 package code
 
 const (
-	ERROR = "error"
+	ERROR  = "error"
+	SHEET1 = "Sheet1"
 )

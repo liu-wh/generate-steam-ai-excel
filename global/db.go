@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	DB     *gorm.DB
-	Logger *slog.Logger
-	R      *redis.Client
-	CTX    = context.Background()
-	F      *excelize.File
+	DB             *gorm.DB
+	Logger         *slog.Logger
+	R              *redis.Client
+	CTX            = context.Background()
+	F              *excelize.File
+	OnlineUserFile *excelize.File
 )
