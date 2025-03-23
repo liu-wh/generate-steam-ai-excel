@@ -120,15 +120,17 @@ func main() {
 					global.Logger.Error("解析游戏史低价格失败", code.ERROR, err, "游戏ID", gameID)
 					continue
 				}
-				_date := time.Unix(int64(_cc.TimeStamp), 0)
-				if _cc.Price == 0 && _cc.TimeStamp == 88 {
-					gameInfo = append(gameInfo, " ", " ")
-					continue
-				} else if _cc.Price != 0 && _cc.TimeStamp == 88 {
-					gameInfo = append(gameInfo, _cc.Price, ' ')
-					continue
+				var (
+					_date string
+					_p    float64
+				)
+				if _cc.TimeStamp == 88 {
+					_date = " "
+				} else {
+					_date = time.Unix(int64(_cc.TimeStamp), 0).Format(time.DateOnly)
 				}
-				gameInfo = append(gameInfo, _cc.Price, _date.Format(time.DateOnly))
+
+				gameInfo = append(gameInfo, _p, _date)
 				continue
 			}
 			_location := models.SteamLocation{}
