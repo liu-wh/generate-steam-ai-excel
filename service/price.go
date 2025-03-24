@@ -130,10 +130,11 @@ func GeneratePriceExcel() {
 		if flag {
 			continue
 		}
-		if err := global.F.SetSheetRow(code.SHEET1, A+strconv.Itoa(idx), &gameInfo); err != nil {
-			global.Logger.Error("写入Excel失败", code.ERROR, err)
+		if len(gameInfo) > 0 {
+			if err := global.F.SetSheetRow(code.SHEET1, A+strconv.Itoa(idx), &gameInfo); err != nil {
+				global.Logger.Error("写入Excel失败", code.ERROR, err)
+			}
+			idx += 1
 		}
-		idx += 1
-
 	}
 }
