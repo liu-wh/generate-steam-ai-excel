@@ -53,11 +53,11 @@ func GeneratePriceExcel() {
 					}
 					if _storeData.Data.IsFree {
 						gameInfo = append(gameInfo, util.GetGameName(&models.SteamGamePrice{SteamGameID: uint(_storeData.Data.SteamAppid)}), " ", " ", "免费")
-						idx += 1
 						flag = true
 						if err = global.F.SetSheetRow(code.SHEET1, A+strconv.Itoa(idx), &gameInfo); err != nil {
 							global.Logger.Error("写入Excel失败", code.ERROR, err)
 						}
+						idx += 1
 						break
 					}
 				}
