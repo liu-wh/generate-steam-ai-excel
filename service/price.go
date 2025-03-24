@@ -39,6 +39,8 @@ func GeneratePriceExcel() {
 			)
 			if _storeDataStr, err = global.R.HGet(global.CTX, "SteamGameStoreDetailData", gameID).Result(); err != nil {
 				global.Logger.Error("查询游戏详情失败", code.ERROR, err, "游戏ID", gameID)
+				flag = true
+				break
 			} else {
 				if err = json.Unmarshal(util.Str2bytes(_storeDataStr), &_storeData); err != nil {
 					global.Logger.Error("解析游戏详情失败", code.ERROR, err, "游戏ID", gameID)
@@ -47,6 +49,9 @@ func GeneratePriceExcel() {
 						gameInfo = append(gameInfo, util.GetGameName(&models.SteamGamePrice{SteamGameID: uint(_storeData.Data.SteamAppid)}), " ", " ", "免费")
 						idx += 1
 						flag = true
+						if err = global.F.SetSheetRow(code.SHEET1, A+strconv.Itoa(idx), &gameInfo); err != nil {
+							global.Logger.Error("写入Excel失败", code.ERROR, err)
+						}
 						break
 					}
 				}
