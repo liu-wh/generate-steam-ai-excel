@@ -32,7 +32,7 @@ func GeneratePriceExcel() {
 		for i := range 41 {
 			i += 1
 			_price := models.SteamGamePrice{}
-			if err := global.DB.Preload("SteamGame").Where("steam_game_id  = ?", gameID).Where("steam_location_id = ?", i).Find(&_price).Error; err != nil {
+			if err := global.DB.Preload("SteamGame").Where("steam_game_id  = ?", gameID).Where("steam_location_id = ?", i).First(&_price).Error; err != nil {
 				global.Logger.Error("查询steam游戏价格失败", code.ERROR, err, "游戏ID", gameID, "区ID", i)
 				continue
 			}
@@ -50,6 +50,7 @@ func GeneratePriceExcel() {
 					} else {
 						if _storeData.Data.IsFree {
 							gameInfo = append(gameInfo, util.GetGameName(&models.SteamGamePrice{SteamGameID: uint(_storeData.Data.SteamAppid)}), " ", " ", "免费")
+							idx += 1
 							flag = true
 							break
 						}
