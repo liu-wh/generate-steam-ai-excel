@@ -31,32 +31,33 @@ func GeneratePriceExcel() {
 		gameInfo := make([]any, 0, 84)
 		for i := range 41 {
 			i += 1
+
+			_storeData := models.SteamGameStoreData{}
+			var (
+				_storeDataStr string
+				err           error
+			)
+			if _storeDataStr, err = global.R.HGet(global.CTX, "SteamGameStoreDetailData", gameID).Result(); err != nil {
+				global.Logger.Error("查询游戏详情失败", code.ERROR, err, "游戏ID", gameID)
+			} else {
+				if err = json.Unmarshal(util.Str2bytes(_storeDataStr), &_storeData); err != nil {
+					global.Logger.Error("解析游戏详情失败", code.ERROR, err, "游戏ID", gameID)
+				} else {
+					if _storeData.Data.IsFree {
+						gameInfo = append(gameInfo, util.GetGameName(&models.SteamGamePrice{SteamGameID: uint(_storeData.Data.SteamAppid)}), " ", " ", "免费")
+						idx += 1
+						flag = true
+						break
+					}
+				}
+			}
+
 			_price := models.SteamGamePrice{}
-			if err := global.DB.Preload("SteamGame").Where("steam_game_id  = ?", gameID).Where("steam_location_id = ?", i).First(&_price).Error; err != nil {
+			if err = global.DB.Preload("SteamGame").Where("steam_game_id  = ?", gameID).Where("steam_location_id = ?", i).First(&_price).Error; err != nil {
 				global.Logger.Error("查询steam游戏价格失败", code.ERROR, err, "游戏ID", gameID, "区ID", i)
 				continue
 			}
 			if i == 1 {
-				_storeData := models.SteamGameStoreData{}
-				var (
-					_storeDataStr string
-					err           error
-				)
-				if _storeDataStr, err = global.R.HGet(global.CTX, "SteamGameStoreDetailData", gameID).Result(); err != nil {
-					global.Logger.Error("查询游戏详情失败", code.ERROR, err, "游戏ID", gameID)
-				} else {
-					if err = json.Unmarshal(util.Str2bytes(_storeDataStr), &_storeData); err != nil {
-						global.Logger.Error("解析游戏详情失败", code.ERROR, err, "游戏ID", gameID)
-					} else {
-						if _storeData.Data.IsFree {
-							gameInfo = append(gameInfo, util.GetGameName(&models.SteamGamePrice{SteamGameID: uint(_storeData.Data.SteamAppid)}), " ", " ", "免费")
-							idx += 1
-							flag = true
-							break
-						}
-					}
-				}
-
 				if _price.Initial == 0 && _price.Final == 0 {
 					flag = true
 					break
