@@ -34,10 +34,11 @@ func GenerateOnlineUserExcel() {
 		return
 	}
 	i := 2
-	for _, game := range gameList {
+	for idx, game := range gameList {
 		_ = global.OnlineUserFile.SetSheetRow(code.SHEET1, "A"+strconv.Itoa(i), &[]any{
 			game.Name,
 			game.Count,
+			idx + 1,
 		})
 		i += 1
 	}
