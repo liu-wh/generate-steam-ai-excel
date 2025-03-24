@@ -9,6 +9,7 @@ import (
 	"generate-steam-ai-excel/models"
 	"generate-steam-ai-excel/util"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 	"strconv"
 	"time"
 )
@@ -69,7 +70,9 @@ func GeneratePriceExcel() {
 
 			_price := models.SteamGamePrice{}
 			if err = global.DB.Preload("SteamGame").Where("steam_game_id  = ?", gameID).Where("steam_location_id = ?", i).First(&_price).Error; err != nil {
-				global.Logger.Error("查询steam游戏价格失败", code.ERROR, err, "游戏ID", gameID, "区ID", i)
+				if !errors.Is(err, gorm.ErrRecordNotFound) {
+					global.Logger.Error("查询steam游戏价格失败", code.ERROR, err, "游戏ID", gameID, "区ID", i)
+				}
 				continue
 			}
 			if i == 1 {

@@ -7,12 +7,23 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"log"
 	"os"
 	"time"
 )
 
 func SetUpDB() (*gorm.DB, error) {
-	db, err := gorm.Open(mysql.Open(os.Getenv("DB_URL")), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(os.Getenv("DB_URL")), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+			logger.Config{
+				SlowThreshold: time.Second,   // Slow SQL threshold
+				LogLevel:      logger.Silent, // Log level
+				Colorful:      false,         // Disable color
+			},
+		),
+	})
 	if err != nil {
 		return nil, err
 	}
