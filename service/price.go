@@ -80,7 +80,7 @@ func GeneratePriceExcel() {
 					flag = true
 					break
 				}
-				gameInfo = append(gameInfo, util.GetGameName(&_price), _price.DiscountPercent, _price.Initial/100, _price.Final/100)
+				gameInfo = append(gameInfo, util.GetGameName(&_price), _price.DiscountPercent, fmt.Sprintf("%.2f", float64(_price.Initial)/100), fmt.Sprintf("%.2f", float64(_price.Final)/100))
 				_c, err := global.R.HGet(global.CTX, "SteamGamePriceCheapest", gameID).Result()
 				if err != nil {
 					if errors.Is(err, redis.Nil) {
