@@ -25,9 +25,6 @@ func GeneratePriceExcel() {
 	A := "A"
 	//拿到所有游戏的价格
 	for j, gameID := range global.GameList {
-		if j == 1300 {
-			break
-		}
 		flag := false
 		gameInfo := make([]any, 0, 84)
 		for i := range 41 {
