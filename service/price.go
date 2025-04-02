@@ -155,8 +155,7 @@ func GeneratePriceTxt() {
 		flag := false
 		gameInfo := make([]any, 0, 84)
 		cnStr := strings.Builder{}
-		for i := range 41 {
-			i += 1
+		for i := range global.LocationList {
 
 			_storeData := models.SteamGameStoreData{}
 			var (
