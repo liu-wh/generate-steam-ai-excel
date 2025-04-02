@@ -204,11 +204,9 @@ func GeneratePriceTxt() {
 			if i == 1 {
 				if _price.Initial == 0 && _price.Final == 0 {
 					flag = true
-					fmt.Println(&_price.SteamGameID)
 					break
 				}
 				cnStr.WriteString(fmt.Sprintf("游戏名:%s 折扣率:%d 国区原价:%s 国区现价:%s ", util.GetGameName(&_price), _price.DiscountPercent, fmt.Sprintf("%.2f", float64(_price.Initial)/100), fmt.Sprintf("%.2f", float64(_price.Final)/100)))
-				fmt.Println(cnStr.String(), "@")
 				_c, err := global.R.HGet(global.CTX, "SteamGamePriceCheapest", gameID).Result()
 				if err != nil {
 					continue
