@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"generate-steam-ai-excel/code"
 	"generate-steam-ai-excel/database"
 	"generate-steam-ai-excel/global"
@@ -10,7 +9,6 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
-	"time"
 )
 
 func init() {
@@ -61,6 +59,7 @@ func init() {
 
 	global.OnlineUserFile = excelize.NewFile()
 	_ = global.OnlineUserFile.SetSheetRow("Sheet1", "A1", &[]string{"游戏名", "在线人数"})
+	service.CreateClient()
 }
 
 func releaseResource() {
@@ -69,19 +68,19 @@ func releaseResource() {
 		global.Logger.Error("关闭数据库失败", code.ERROR, err)
 		os.Exit(1)
 	}
-	if err := global.F.SaveAs(fmt.Sprintf("steam_price_%s.xlsx", time.Now().Format(time.DateOnly))); err != nil {
-		global.Logger.Error("保存Excel失败", code.ERROR, err)
-		os.Exit(1)
-	}
-
-	if err := global.OnlineUserFile.SaveAs(fmt.Sprintf("steam_online_user_%s.xlsx", time.Now().Format(time.DateOnly))); err != nil {
-		global.Logger.Error("保存Excel失败", code.ERROR, err)
-		os.Exit(1)
-	}
+	_ = global.OnlineUserFile.Close()
+	_ = global.F.Close()
 }
 
 func main() {
 	defer releaseResource()
-	service.GeneratePriceExcel()
-	service.GenerateOnlineUserExcel()
+	//service.GeneratePriceExcel()
+	//service.IndexOnlineUser()
+	service.GeneratePriceTxt()
+	//x, _ := service.ListBaiLianFile()
+	//for _, j := range x {
+	//	fmt.Println(*j.FileId)
+	//}
+
+	//fmt.Println(service.UploadFileToALiYunBaiLian("steam_price_2025-03-21.xlsx"))
 }

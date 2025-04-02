@@ -10,7 +10,9 @@ import (
 	"generate-steam-ai-excel/util"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -134,4 +136,146 @@ func GeneratePriceExcel() {
 			idx += 1
 		}
 	}
+
+	if err := global.F.SaveAs(fmt.Sprintf("steam_price_%s.xlsx", time.Now().Format(time.DateOnly))); err != nil {
+		global.Logger.Error("保存Excel失败", code.ERROR, err)
+		os.Exit(1)
+	}
+}
+
+func GeneratePriceTxt() {
+	_file, err := os.Create(fmt.Sprintf("steam_price_%s.txt", time.Now().Format(time.DateOnly)))
+	if err != nil {
+		global.Logger.Error("创建价格文件失败", code.ERROR, err)
+		os.Exit(1)
+	}
+	//拿到所有游戏的价格
+	for j, gameID := range global.GameList {
+		if j > 500 {
+			break
+		}
+		data := strings.Builder{}
+		flag := false
+		gameInfo := make([]any, 0, 84)
+		cnStr := strings.Builder{}
+		for i := range 41 {
+			i += 1
+
+			_storeData := models.SteamGameStoreData{}
+			var (
+				_storeDataStr string
+				err           error
+			)
+			if _storeDataStr, err = global.R.HGet(global.CTX, "SteamGameStoreDetailData", gameID).Result(); err != nil {
+				global.Logger.Error("查询游戏详情失败", code.ERROR, err, "游戏ID", gameID)
+				flag = true
+				break
+			} else {
+				if err = json.Unmarshal(util.Str2bytes(_storeDataStr), &_storeData); err != nil {
+					global.Logger.Error("解析游戏详情失败", code.ERROR, err, "游戏ID", gameID)
+					flag = true
+					break
+				} else {
+					if !_storeData.Success {
+						flag = true
+						break
+					}
+					if _storeData.Data.IsFree {
+						gameName := util.GetGameName(&models.SteamGamePrice{SteamGameID: uint(_storeData.Data.SteamAppid)})
+						if gameName == "" {
+							gameName = _storeData.Data.Name
+						}
+						gameInfo = append(gameInfo, gameName, " ", " ", "免费")
+						flag = true
+						data.WriteString(fmt.Sprintf("游戏名:%s 国区现价:免费\n", gameName))
+						//if err = global.F.SetSheetRow(code.SHEET1, A+strconv.Itoa(idx), &gameInfo); err != nil {
+						//	global.Logger.Error("写入Excel失败", code.ERROR, err)
+						//}
+						//idx += 1
+						break
+					}
+				}
+			}
+
+			_price := models.SteamGamePrice{}
+			if err = global.DB.Preload("SteamGame").Where("steam_game_id  = ?", gameID).Where("steam_location_id = ?", i).First(&_price).Error; err != nil {
+				if !errors.Is(err, gorm.ErrRecordNotFound) {
+					global.Logger.Error("查询steam游戏价格失败", code.ERROR, err, "游戏ID", gameID, "区ID", i)
+				}
+				continue
+			}
+			if i == 1 {
+				if _price.Initial == 0 && _price.Final == 0 {
+					flag = true
+					fmt.Println(&_price.SteamGameID)
+					break
+				}
+				cnStr.WriteString(fmt.Sprintf("游戏名:%s 折扣率:%d 国区原价:%s 国区现价:%s ", util.GetGameName(&_price), _price.DiscountPercent, fmt.Sprintf("%.2f", float64(_price.Initial)/100), fmt.Sprintf("%.2f", float64(_price.Final)/100)))
+				fmt.Println(cnStr.String(), "@")
+				_c, err := global.R.HGet(global.CTX, "SteamGamePriceCheapest", gameID).Result()
+				if err != nil {
+					continue
+				}
+				_cc := Cheapest{}
+				if err = json.Unmarshal([]byte(_c), &_cc); err != nil {
+					global.Logger.Error("解析游戏史低价格失败", code.ERROR, err, "游戏ID", gameID)
+					continue
+				}
+				var (
+					_date string
+					_p    float64
+				)
+				if _cc.TimeStamp == 88 {
+					_date = " "
+				} else {
+					_date = time.Unix(int64(_cc.TimeStamp), 0).Format(time.DateOnly)
+				}
+				_p = _cc.Price
+				cnStr.WriteString(fmt.Sprintf("史低价格:%f 史低时间:%s ", _p, _date))
+				//gameInfo = append(gameInfo, _p, _date)
+				continue
+			}
+			_location := models.SteamLocation{}
+			if err := global.DB.Where("id = ?", i).Find(&_location).Error; err != nil {
+				global.Logger.Error("查询steam区", code.ERROR, err, "区ID", i)
+				continue
+			}
+			exchangeRate := global.ExchangeRateMap[_location.CurrencyCode]
+			initP := (float64(_price.Initial) / 100) * exchangeRate
+			finalP := (float64(_price.Final) / 100) * exchangeRate
+			initStr := fmt.Sprintf("%.2f", initP)
+			finalStr := fmt.Sprintf("%.2f", finalP)
+			if initP == 0 {
+				initStr = "无"
+			}
+			if finalP == 0 {
+				finalStr = "无"
+			}
+			data.WriteString(fmt.Sprintf("%s区原价:%s %s区现价:%s ", _location.Name, initStr, _location.Name, finalStr))
+			//gameInfo = append(gameInfo, initStr, finalStr)
+		}
+		if flag {
+			continue
+		}
+		data.WriteString("\n")
+		if _, err = _file.WriteString(cnStr.String()); err != nil {
+			global.Logger.Error("写入文件失败", code.ERROR, err)
+		}
+		if _, err = _file.WriteString(data.String()); err != nil {
+			global.Logger.Error("写入文件失败", code.ERROR, err)
+		}
+	}
+	if err = _file.Sync(); err != nil {
+		global.Logger.Error("同步文件失败", code.ERROR, err)
+		os.Exit(1)
+	}
+	if err = _file.Close(); err != nil {
+		global.Logger.Error("关闭文件失败", code.ERROR, err)
+		os.Exit(1)
+	}
+
+	//if err := global.F.SaveAs(fmt.Sprintf("steam_price_%s.xlsx", time.Now().Format(time.DateOnly))); err != nil {
+	//	global.Logger.Error("保存Excel失败", code.ERROR, err)
+	//	os.Exit(1)
+	//}
 }
