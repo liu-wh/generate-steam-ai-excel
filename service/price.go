@@ -150,10 +150,7 @@ func GeneratePriceTxt() {
 		os.Exit(1)
 	}
 	//拿到所有游戏的价格
-	for j, gameID := range global.GameList {
-		if j > 500 {
-			break
-		}
+	for _, gameID := range global.GameList {
 		data := strings.Builder{}
 		flag := false
 		gameInfo := make([]any, 0, 84)
@@ -231,7 +228,7 @@ func GeneratePriceTxt() {
 					_date = time.Unix(int64(_cc.TimeStamp), 0).Format(time.DateOnly)
 				}
 				_p = _cc.Price
-				cnStr.WriteString(fmt.Sprintf("史低价格:%f 史低时间:%s ", _p, _date))
+				cnStr.WriteString(fmt.Sprintf("史低价格:%.2f 史低时间:%s ", _p, _date))
 				//gameInfo = append(gameInfo, _p, _date)
 				continue
 			}
@@ -257,7 +254,9 @@ func GeneratePriceTxt() {
 		if flag {
 			continue
 		}
-		data.WriteString("\n")
+		if data.String() != "" {
+			data.WriteString("\n")
+		}
 		if _, err = _file.WriteString(cnStr.String()); err != nil {
 			global.Logger.Error("写入文件失败", code.ERROR, err)
 		}
