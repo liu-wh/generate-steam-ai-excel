@@ -81,7 +81,13 @@ func main() {
 	//for _, j := range x {
 	//	fmt.Println(*j.FileId)
 	//}
-	service.IndexPrice()
+	//service.IndexPrice()
+	//service.IndexOnlineUser()
+	if len(os.Args) > 0 && os.Args[1] == "user" {
+		service.IndexOnlineUser()
+	} else {
+		service.IndexPrice()
+	}
 
 	//fmt.Println(service.UploadFileToALiYunBaiLian("steam_price_2025-03-21.xlsx"))
 }

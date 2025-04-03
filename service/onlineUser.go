@@ -9,6 +9,7 @@ import (
 	bailian20231229 "github.com/alibabacloud-go/bailian-20231229/client"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -54,8 +55,36 @@ func GenerateOnlineUserExcel() string {
 	return fileName
 }
 
+func GenerateOnlineUserTxt() string {
+	var (
+		onlineUserStr string
+		err           error
+	)
+	if onlineUserStr, err = global.R.Get(global.CTX, "SteamGameTop").Result(); err != nil {
+		return ""
+	}
+	gameList := make([]*SteamGame, 0, 3000)
+	if err = json.Unmarshal(util.Str2bytes(onlineUserStr), &gameList); err != nil {
+		global.Logger.Error("解析在线用户数据失败", code.ERROR, err)
+		return ""
+	}
+	fileName := fmt.Sprintf("steam_online_user_%s.txt", time.Now().Format(time.DateTime))
+	_file, err := os.Create(fileName)
+	if err != nil {
+		global.Logger.Error("创建价格文件失败", code.ERROR, err)
+		os.Exit(1)
+	}
+	for _, game := range gameList {
+		_, _ = _file.WriteString(fmt.Sprintf("游戏名:%s 在线人数:%d\n", game.Name, game.Count))
+	}
+	_ = _file.Sync()
+	_ = _file.Close()
+
+	return fileName
+}
+
 func IndexOnlineUser() {
-	fileName := GenerateOnlineUserExcel()
+	fileName := GenerateOnlineUserTxt()
 	var (
 		fileID       string
 		err          error
@@ -82,6 +111,17 @@ func IndexOnlineUser() {
 		return
 	}
 	if err = SubmitIndexAddDocumentsJob([]*string{&fileID}); err != nil {
+		return
+	}
+
+	docs := ListIndexDocuments()
+	deleteList := make([]*string, 0)
+	for _, j := range docs {
+		if strings.HasPrefix(*j.Name, "steam_online_user_") && *j.Name != fileName {
+			deleteList = append(deleteList, j.Id)
+		}
+	}
+	if err = DeleteIndexDocument(deleteList); err != nil {
 		return
 	}
 
