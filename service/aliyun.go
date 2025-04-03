@@ -109,21 +109,46 @@ func ApplyFileUploadLease(fileName string) (*bailian20231229.ApplyFileUploadLeas
 		global.Logger.Error("获取文件大小失败", code.ERROR, err)
 		return nil, err
 	}
-	fmt.Println(fileSize)
 	applyFileUploadLeaseRequest := &bailian20231229.ApplyFileUploadLeaseRequest{
 		FileName:    tea.String(fileName),
 		SizeInBytes: tea.String(strconv.Itoa(int(fileSize))),
 		Md5:         tea.String(fileMd5),
 	}
+	resp, tryErr := func() (resp *bailian20231229.ApplyFileUploadLeaseResponse, _e error) {
+		defer func() {
+			if r := tea.Recover(recover()); r != nil {
+				_e = r
+			}
+		}()
+		// 复制代码运行请自行打印 API 的返回值
+		resp, _e = global.ALiYunClient.ApplyFileUploadLeaseWithOptions(global.ALiYunBaiLianCateID,
+			global.ALiYunBaiLianWorkspaceID, applyFileUploadLeaseRequest, global.AliYunHeaders, global.ALiYunRuntime)
+		return
+	}()
 
-	resp, _err := global.ALiYunClient.ApplyFileUploadLeaseWithOptions(global.ALiYunBaiLianCateID,
-		global.ALiYunBaiLianWorkspaceID, applyFileUploadLeaseRequest, global.AliYunHeaders, global.ALiYunRuntime)
-
-	if _err != nil {
-		global.Logger.Error("申请文件上传失败", code.ERROR, _err)
-		return nil, _err
+	if tryErr != nil {
+		var error = &tea.SDKError{}
+		if _t, ok := tryErr.(*tea.SDKError); ok {
+			error = _t
+		} else {
+			error.Message = tea.String(tryErr.Error())
+		}
+		// 此处仅做打印展示，请谨慎对待异常处理，在工程项目中切勿直接忽略异常。
+		// 错误 message
+		fmt.Println(tea.StringValue(error.Message))
+		// 诊断地址
+		var data interface{}
+		d := json.NewDecoder(strings.NewReader(tea.StringValue(error.Data)))
+		d.Decode(&data)
+		if m, ok := data.(map[string]interface{}); ok {
+			recommend, _ := m["Recommend"]
+			fmt.Println(recommend)
+		}
+		_, _err := aliUtil.AssertAsString(error.Message)
+		if _err != nil {
+			return nil, _err
+		}
 	}
-	fmt.Println(resp.Body.String())
 	return resp.Body.Data, nil
 }
 
