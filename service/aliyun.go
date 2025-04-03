@@ -195,3 +195,30 @@ func SubmitIndexAddDocumentsJob(documentIds []*string) error {
 	}
 	return nil
 }
+
+func ListIndexDocuments() []*bailian20231229.ListIndexDocumentsResponseBodyDataDocuments {
+	listIndexDocumentsRequest := &bailian20231229.ListIndexDocumentsRequest{
+		IndexId: global.ALiYunIndexID,
+	}
+	resp, _err := global.ALiYunClient.ListIndexDocumentsWithOptions(global.ALiYunBaiLianWorkspaceID,
+		listIndexDocumentsRequest, global.AliYunHeaders, global.ALiYunRuntime)
+	if _err != nil {
+		global.Logger.Error("查询索引文档失败", code.ERROR, _err)
+		return nil
+	}
+	return resp.Body.Data.Documents
+}
+
+func DeleteIndexDocument(docs []*string) error {
+	deleteIndexDocumentRequest := &bailian20231229.DeleteIndexDocumentRequest{
+		IndexId:     global.ALiYunIndexID,
+		DocumentIds: docs,
+	}
+	_, _err := global.ALiYunClient.DeleteIndexDocumentWithOptions(global.ALiYunBaiLianWorkspaceID,
+		deleteIndexDocumentRequest, global.AliYunHeaders, global.ALiYunRuntime)
+	if _err != nil {
+		global.Logger.Error("删除索引文档失败", code.ERROR, _err)
+		return _err
+	}
+	return nil
+}

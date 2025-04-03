@@ -8,6 +8,7 @@ import (
 	"generate-steam-ai-excel/global"
 	"generate-steam-ai-excel/models"
 	"generate-steam-ai-excel/util"
+	bailian20231229 "github.com/alibabacloud-go/bailian-20231229/client"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"os"
@@ -143,8 +144,9 @@ func GeneratePriceExcel() {
 	}
 }
 
-func GeneratePriceTxt() {
-	_file, err := os.Create(fmt.Sprintf("steam_price_%s.txt", time.Now().Format(time.DateOnly)))
+func GeneratePriceTxt() string {
+	fileName := fmt.Sprintf("steam_price_%s.txt", time.Now().Format(time.DateOnly))
+	_file, err := os.Create(fileName)
 	if err != nil {
 		global.Logger.Error("创建价格文件失败", code.ERROR, err)
 		os.Exit(1)
@@ -269,9 +271,52 @@ func GeneratePriceTxt() {
 		global.Logger.Error("关闭文件失败", code.ERROR, err)
 		os.Exit(1)
 	}
-
+	return fileName
 	//if err := global.F.SaveAs(fmt.Sprintf("steam_price_%s.xlsx", time.Now().Format(time.DateOnly))); err != nil {
 	//	global.Logger.Error("保存Excel失败", code.ERROR, err)
 	//	os.Exit(1)
 	//}
+}
+
+func IndexPrice() {
+	fileName := GeneratePriceTxt()
+	var (
+		fileID       string
+		err          error
+		describeData *bailian20231229.DescribeFileResponseBodyData
+	)
+	if fileID, err = UploadFileToALiYunBaiLian(fileName); err != nil {
+		return
+	}
+	time.Sleep(time.Minute * 2)
+	flag := true
+	for _ = range 20 {
+		if describeData, err = DescribeBaiLianFile(fileID); err != nil {
+			global.Logger.Error("获取文件信息失败", code.ERROR, err)
+			return
+		}
+		if *describeData.Status == "PARSE_SUCCESS" {
+			flag = false
+			break
+		}
+		time.Sleep(time.Minute * 1)
+	}
+	if flag {
+		global.Logger.Error("价格文件解析失败,超过20分钟")
+		return
+	}
+	if err = SubmitIndexAddDocumentsJob([]*string{&fileID}); err != nil {
+		return
+	}
+	docs := ListIndexDocuments()
+	deleteList := make([]*string, 0)
+	for _, j := range docs {
+		if strings.HasPrefix(*j.Name, "steam_price") && *j.Name != fileName {
+			deleteList = append(deleteList, j.Id)
+		}
+	}
+	if err = DeleteIndexDocument(deleteList); err != nil {
+		return
+	}
+
 }

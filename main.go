@@ -76,11 +76,12 @@ func main() {
 	defer releaseResource()
 	//service.GeneratePriceExcel()
 	//service.IndexOnlineUser()
-	service.GeneratePriceTxt()
+	//service.GeneratePriceTxt()
 	//x, _ := service.ListBaiLianFile()
 	//for _, j := range x {
 	//	fmt.Println(*j.FileId)
 	//}
+	service.IndexPrice()
 
 	//fmt.Println(service.UploadFileToALiYunBaiLian("steam_price_2025-03-21.xlsx"))
 }
