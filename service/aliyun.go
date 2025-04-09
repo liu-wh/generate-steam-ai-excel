@@ -220,3 +220,8 @@ func DeleteIndexDocument(docs []*string) error {
 	}
 	return nil
 }
+
+func DeleteFile(fID *string) error {
+	_, _err := global.ALiYunClient.DeleteFileWithOptions(fID, global.ALiYunBaiLianWorkspaceID, global.AliYunHeaders, global.ALiYunRuntime)
+	return _err
+}
