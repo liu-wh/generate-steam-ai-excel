@@ -124,4 +124,15 @@ func IndexOnlineUser() {
 	if err = DeleteIndexDocument(deleteList); err != nil {
 		return
 	}
+	fileList, err := ListBaiLianFile()
+	if err != nil {
+		return
+	}
+	for _, j := range fileList {
+		if strings.HasPrefix(*j.FileName, "steam_online_user_") && *j.FileName != fileName {
+			if err = DeleteFile(j.FileId); err != nil {
+				return
+			}
+		}
+	}
 }
