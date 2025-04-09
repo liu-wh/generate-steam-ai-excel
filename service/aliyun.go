@@ -123,7 +123,6 @@ func ApplyFileUploadLease(fileName string) (*bailian20231229.ApplyFileUploadLeas
 		global.Logger.Error("申请文件上传失败", code.ERROR, _err)
 		return nil, _err
 	}
-	fmt.Println(resp.Body.String())
 	return resp.Body.Data, nil
 }
 

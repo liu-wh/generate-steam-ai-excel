@@ -83,8 +83,10 @@ func main() {
 	//}
 	//service.IndexPrice()
 	//service.IndexOnlineUser()
-	if len(os.Args) > 0 && os.Args[1] == "user" {
-		service.IndexOnlineUser()
+	if len(os.Args) > 0 {
+		if os.Args[1] == "user" {
+			service.IndexOnlineUser()
+		}
 	} else {
 		service.IndexPrice()
 	}
