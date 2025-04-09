@@ -109,7 +109,6 @@ func ApplyFileUploadLease(fileName string) (*bailian20231229.ApplyFileUploadLeas
 		global.Logger.Error("获取文件大小失败", code.ERROR, err)
 		return nil, err
 	}
-	fmt.Println(fileSize)
 	applyFileUploadLeaseRequest := &bailian20231229.ApplyFileUploadLeaseRequest{
 		FileName:    tea.String(fileName),
 		SizeInBytes: tea.String(strconv.Itoa(int(fileSize))),

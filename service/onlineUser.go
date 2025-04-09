@@ -124,9 +124,4 @@ func IndexOnlineUser() {
 	if err = DeleteIndexDocument(deleteList); err != nil {
 		return
 	}
-	for _, j := range deleteList {
-		if err = DeleteFile(j); err != nil {
-			return
-		}
-	}
 }
